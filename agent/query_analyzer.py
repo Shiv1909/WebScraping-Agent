@@ -1,47 +1,49 @@
+# agent/query_analyzer.py
+
 from typing import Dict, List, Union
 import google.generativeai as genai
 from .config import GEMINI_API_KEY
 import logging
 import time
-import ast  # ✅ safer than eval
+import ast
+
+# ─── Logging Config ─────────────────────────────────────────────
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class QueryAnalyzer:
     def __init__(self):
         self.model = genai.GenerativeModel("gemini-2.0-pro-exp-02-05")
 
     def analyze_query(self, query: str) -> Dict[str, Union[str, List[List[str]]]]:
-        """Uses Gemini to extract structured search intent + grouped keyword chunks."""
+        """
+        Uses Gemini to extract structured web search intent and keyword clusters.
+
+        Returns:
+            Dict with Intent, Info Types, Time Range, KeywordChunks
+        """
         prompt = f"""
-            You are a web research planning assistant. Break down the user query into:
+        You are a web research planning assistant. Break down the user query into:
 
-            1. Intent: Describe what the user is trying to learn (e.g., 'news', 'comparison', 'status update')
-            2. Info Types: Describe what type of sources/data should be retrieved
-            3. Time Range: What time filters should apply (e.g., recent, past year)
-            4. KeywordChunks: Group 2–5 related keyword phrases per cluster that can be used for targeted web search queries.
+        1. Intent: Describe what the user is trying to learn
+        2. Info Types: Type of data/sources needed
+        3. Time Range: Temporal scope (e.g., recent, past year)
+        4. KeywordChunks: Group 2–5 related search phrases into Python-style list of lists
 
-            The keyword groups should be returned as a valid Python list of lists, with no markdown formatting.
+        User Query:
+        \"\"\"{query}\"\"\"
 
-            User Query:
-            \"\"\"
-            {query}
-            \"\"\"
-
-            Expected format:
-            Intent: ...
-            Info Types: ...
-            Time Range: ...
-            KeywordChunks:
-            [
-            ["India US trade deal", "India US trade agreement"],
-            ["India exports to US", "US imports from India"],
-            ["USTR India", "Ministry of Commerce India"]
-            ]
-            """
+        Format:
+        Intent: ...
+        Info Types: ...
+        Time Range: ...
+        KeywordChunks:
+        [["term1", "term2"], ["group2a", "group2b"]]
+        """
 
         try:
             response = self.model.generate_content(prompt)
-            print("🔍 Gemini response:\n", response.text.strip())
+            logger.info("Gemini query analysis succeeded")
             time.sleep(5)
             return self._parse_response(response.text.strip(), query)
 
@@ -76,7 +78,6 @@ class QueryAnalyzer:
                 key, value = line.split(":", 1)
                 result[key.strip()] = value.strip()
 
-        # Parse the keyword chunks
         if chunk_lines:
             try:
                 chunk_text = "\n".join(chunk_lines).strip()

@@ -1,12 +1,14 @@
 # agent/search_tool.py
 
 import requests
-from typing import List, Dict, Optional
+from typing import List, Dict
 from urllib.parse import urlencode
 import logging
 from .config import GOOGLE_CSE_API_KEY, GOOGLE_CSE_CX
 
+# ─── Logging Config ─────────────────────────────────────────────
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class GoogleCSESearchTool:
     def __init__(self, api_key: str, cse_id: str):
@@ -21,10 +23,10 @@ class GoogleCSESearchTool:
         Args:
             query (str): Search query.
             num_results (int): Results per page (Google limits this to max 10).
-            max_pages (int): How many pages to attempt (each page has up to 10 results).
+            max_pages (int): Number of pages to retrieve (each page has up to 10 results).
 
         Returns:
-            List of dicts: Each dict contains 'title', 'link', 'snippet', and 'page'.
+            List[Dict[str, str]]: Each dict contains 'title', 'link', 'snippet', and 'page'.
         """
         results = []
 
@@ -43,7 +45,11 @@ class GoogleCSESearchTool:
                 response.raise_for_status()
                 data = response.json()
 
-                for item in data.get("items", []):
+                if "items" not in data:
+                    logger.warning(f"No results found on page {page_num + 1} for query: {query}")
+                    continue
+
+                for item in data["items"]:
                     results.append({
                         "title": item.get("title"),
                         "link": item.get("link"),
@@ -56,7 +62,7 @@ class GoogleCSESearchTool:
                 break
 
             except Exception as e:
-                logger.error(f"Unexpected error during search on page {page_num + 1}: {e}")
+                logger.exception(f"Unexpected error during search on page {page_num + 1}")
                 break
 
         return results
