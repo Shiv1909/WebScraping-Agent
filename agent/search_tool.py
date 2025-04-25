@@ -14,34 +14,49 @@ class GoogleCSESearchTool:
         self.cse_id = cse_id
         self.base_url = "https://www.googleapis.com/customsearch/v1"
 
-    def search(self, query: str, num_results: int = 5) -> List[Dict[str, str]]:
-        """Perform a web search using Google CSE."""
-        params = {
-            "q": query,
-            "cx": self.cse_id,
-            "key": self.api_key,
-            "num": num_results,
-        }
+    def search(self, query: str, num_results: int = 10, max_pages: int = 2) -> List[Dict[str, str]]:
+        """
+        Perform a web search using Google CSE and fetch results across multiple pages.
 
-        try:
-            response = requests.get(self.base_url, params=params, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            results = []
+        Args:
+            query (str): Search query.
+            num_results (int): Results per page (Google limits this to max 10).
+            max_pages (int): How many pages to attempt (each page has up to 10 results).
 
-            for item in data.get("items", []):
-                results.append({
-                    "title": item.get("title"),
-                    "link": item.get("link"),
-                    "snippet": item.get("snippet", "")
-                })
+        Returns:
+            List of dicts: Each dict contains 'title', 'link', 'snippet', and 'page'.
+        """
+        results = []
 
-            return results
+        for page_num in range(max_pages):
+            start = page_num * num_results + 1
+            params = {
+                "q": query,
+                "cx": self.cse_id,
+                "key": self.api_key,
+                "num": num_results,
+                "start": start
+            }
 
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Search failed: {e}")
-            return []
+            try:
+                response = requests.get(self.base_url, params=params, timeout=10)
+                response.raise_for_status()
+                data = response.json()
 
-        except Exception as e:
-            logger.error(f"Unexpected error during search: {e}")
-            return []
+                for item in data.get("items", []):
+                    results.append({
+                        "title": item.get("title"),
+                        "link": item.get("link"),
+                        "snippet": item.get("snippet", ""),
+                        "page": page_num + 1
+                    })
+
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Search failed on page {page_num + 1}: {e}")
+                break
+
+            except Exception as e:
+                logger.error(f"Unexpected error during search on page {page_num + 1}: {e}")
+                break
+
+        return results

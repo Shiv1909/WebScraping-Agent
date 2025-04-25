@@ -1,72 +1,128 @@
-## 📚 Web Research Agent
+# 🌐 Gemini-Powered RAG Web Research Agent
 
-An AI-powered assistant built with Gemini 2.5 Pro and Streamlit that performs end-to-end web research. It analyzes user queries, performs custom Google searches, scrapes and summarizes content, checks source reliability, and synthesizes information into a coherent report.
-
----
-
-### 🧠 Key Features
-
-- **Query Understanding**: Gemini extracts intent, keywords, info types, and time filters.
-- **Web Search**: Uses Google Custom Search API to fetch relevant links.
-- **Web Scraping**: Extracts textual content from links using BeautifulSoup.
-- **Content Analysis**: Summarizes content, tags content type, and checks topical relevance.
-- **Information Synthesis**: Groups insights, resolves contradictions, and presents a final takeaway.
-- **Streamlit Interface**: Interactive research flow with real-time summaries and a final report.
+An intelligent web research assistant that combines Google Gemini, Google CSE API, BeautifulSoup-based scraping, TF-IDF ranking, and Chroma vector store to conduct deep web research and synthesize insights with proper citations.
 
 ---
 
-### 🗂️ Project Structure
+## 🚀 Features
+
+- **Gemini LLM Query Analyzer**: Extracts intent, information types, time ranges, and keyword chunks from user queries.
+- **Google CSE Integration**: Uses official API to get highly relevant search results.
+- **Homepage Detection + Internal Crawler**: Automatically detects homepage links and crawls subpages.
+- **TF-IDF + Cosine Similarity Ranking**: Ranks internal links based on relevance to the user query. Only links with cosine similarity above a threshold (default: **0.3**) are followed.
+- **Text Chunking**: Breaks scraped content into manageable pieces using LangChain's `RecursiveCharacterTextSplitter`.
+- **Embedding + Storage**: Generates Gemini embeddings and stores in a persistent Chroma vectorstore.
+- **Semantic Retrieval + Answer Generation**: Retrieves top-k relevant chunks and uses Gemini to synthesize a comprehensive, well-cited Markdown report.
+- **Streamlit UI**: Clean interface with sidebar controls for max links, crawl depth, and page count.
+
+---
+
+## 🔍 How It Works (Flow)
+
+1. **User Inputs Query** in Streamlit UI
+2. **Gemini Query Analyzer** extracts search metadata
+3. **Google CSE API** fetches links for each keyword chunk
+4. If a link is a homepage:
+    - Crawl subpages using BeautifulSoup
+    - Extract internal links
+    - Rank using TF-IDF + Cosine Similarity
+    - **Only enqueue links with similarity > 0.3**
+5. **Scraped content** is chunked and embedded
+6. Chunks are stored in **Chroma vector store**
+7. **Retriever pulls top chunks** based on query
+8. Gemini LLM generates a **final answer** with citations
+---
+
+### 📊 Architecture
+
+For a visual representation of the agent's components and data flow, please refer to the diagram:
+
+![Architecture Diagram](docs/architecture.png)
+
+---
+
+## 📂 Folder Structure
 
 ```bash
 WebResearchAgent/
-│
-├── app.py                        # Streamlit UI & orchestration logic
-├── .env                          # API Keys and environment settings
-├── README.md                     # This file
+├── app.py                         # Main Streamlit UI app
+├── .env                           # Environment variables (API keys)
 │
 ├── agent/
-│   ├── config.py                 # Loads API keys from environment
-│   ├── query_analyzer.py         # Gemini-powered query breakdown
-│   ├── search_tool.py            # Google CSE search interface
-│   ├── scraper_tool.py           # Web scraping with BeautifulSoup
-│   ├── content_analyzer.py       # Summarizes and rates reliability
-│   └── synthesizer.py            # Gemini synthesis of multi-article insights
+│   ├── config.py                  # API key loader
+│   ├── search_tool.py             # Google CSE search wrapper
+│   ├── scraper_tool.py            # Page scraper using BeautifulSoup
+│   ├── chunker.py                 # LangChain text splitter
+│   └── query_analyzer.py          # Gemini-based query analysis
 │
-└── requirements.txt              # Python dependencies
+├── pipeline/
+│   ├── search_and_scrape.py      # Full web scraping + crawling pipeline
+│   ├── crawler.py                 # Homepage crawler with TF-IDF ranking
+│   ├── link_ranker.py             # TF-IDF cosine similarity scoring
+│   ├── embed_and_store.py        # Embedding chunks to Chroma
+│   ├── query_handler.py          # Unified handler for analyzer
+│   └── answer_generator.py  
+│
+├── docs/                         # Documentation and diagrams
+│   ├── architecture.png          # Visual representation of the agent's architecture
+│   └── design_notes.md           # Notes on design decisions and architecture
+│
+└── tests/                        # Unit and integration tests
+    ├── __init__.py
+    ├── test_query_analyzer.py
+    ├── test_scraper_tool.py
+    └── test_search_tool.py     # Gemini-based RAG answer generator
 ```
 
 ---
 
-### 🔧 Setup & Installation
+## ⚙️ Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/web-research-agent.git
-   cd web-research-agent
-   ```
+```bash
+git clone https://github.com/yourusername/WebResearchAgent.git
+cd WebResearchAgent
+pip install -r requirements.txt
+```
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Setup environment variables**
-   Create a `.env` file with the following:
-   ```env
-   GOOGLE_CSE_API_KEY=your_api_key_here
-   GOOGLE_CSE_CX=your_custom_search_engine_id
-   GEMINI_API_KEY=your_gemini_api_key
-   ```
-
-4. **Run the Streamlit app**
-   ```bash
-   streamlit run app.py
-   ```
+Set your `.env`:
+```bash
+GOOGLE_CSE_API_KEY=your_key
+GOOGLE_CSE_CX=your_cx_id
+GEMINI_API_KEY=your_gemini_key
+```
 
 ---
 
-### 🧬 Architecture Overview
+## 🚪 Run the App
 
-![Architecture Diagram](docs/architecture.png)
+```bash
+streamlit run app.py
+```
 
+---
+
+## 🔍 Example Use Cases
+- Competitive pricing comparisons
+- Government policy tracking
+- Tech product launches
+- Event timeline reports
+
+---
+
+## 🎓 Built With
+- [Google Gemini](https://ai.google.dev/)
+- [Google CSE API](https://programmablesearchengine.google.com/)
+- [LangChain](https://www.langchain.com/)
+- [ChromaDB](https://www.trychroma.com/)
+- [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/)
+
+---
+
+## 🙏 Acknowledgements
+Thanks to OpenAI, Google, LangChain, and the open-source ecosystem.
+
+---
+
+## 🚩 License
+MIT License
 

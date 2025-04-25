@@ -2,3 +2,8 @@ streamlit
 python-dotenv
 bs4
 google-generativeai
+langchain
+langchain-google-genai
+chromadb
+langchain-community
+scikit-learn

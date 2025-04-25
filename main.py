@@ -3,8 +3,6 @@
 from agent.query_analyzer import QueryAnalyzer
 from agent.search_tool import GoogleCSESearchTool
 from agent.scraper_tool import WebScraperTool
-from agent.content_analyzer import ContentAnalyzer
-from agent.synthesizer import Synthesizer
 from agent.config import GOOGLE_CSE_API_KEY, GOOGLE_CSE_CX
 
 def run_web_research_agent(user_query: str):
