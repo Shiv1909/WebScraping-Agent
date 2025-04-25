@@ -42,7 +42,7 @@ user_gemini_key = st.sidebar.text_input(
 
 # Override env key if user provides custom one
 genai.configure(api_key=user_gemini_key if user_gemini_key else GEMINI_API_KEY)
-
+api_key=user_gemini_key if user_gemini_key else GEMINI_API_KEY
 # ─── Sidebar Settings ─────────────────────────────────────────
 st.sidebar.markdown("### ⚙️ Settings")
 
@@ -61,7 +61,7 @@ if user_query:
         chunker = TextChunker()
         embedding_model = GoogleGenerativeAIEmbeddings(
             model="models/text-embedding-004",
-            google_api_key=GEMINI_API_KEY
+            google_api_key=api_key
         )
 
         # RAG steps
