@@ -124,11 +124,4 @@ streamlit run app.py
 - refer to docs/Web Research Agent
 
 ---
-## 🙏 Acknowledgements
-Thanks to OpenAI, Google, LangChain, and the open-source ecosystem.
-
----
-
-## 🚩 License
-MIT License
 
