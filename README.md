@@ -118,6 +118,12 @@ streamlit run app.py
 
 ---
 
+## 🔍 For More information
+- refer to docs/design_notes
+- refer to docs/Examples
+- refer to docs/Web Research Agent
+
+---
 ## 🙏 Acknowledgements
 Thanks to OpenAI, Google, LangChain, and the open-source ecosystem.
 
